@@ -1,4 +1,4 @@
-## BowKMeans
+## BowCluster
 
 Clustering documents according to keywords.
 
@@ -6,39 +6,40 @@ Clustering documents according to keywords.
 
 ### 参数说明
 
-`n_clusters : int, default: 200`
+=> `n_clusters : int, default: 200`
 
-聚类类别数量
+聚类类别数量。
 
-`init : {'random', list of document}`
+=> `init : {'auto', 'random', corpus}, default: 'auto'`
 
-聚类中心初始化的方法，如果为 `'random'` 则从样本中随机挑选。也可以传入一组文档作为初始的聚类中心。
+聚类中心初始化的方法，默认为 `'auto'`，对 `kmeans++` 稍作修改，对聚类中心初试化效果好于随机挑选。 如果为 `'random'` 则从样本中随机挑选，通常应该避免。
 
-`tol : int`
+如果大概知道聚类中心在哪里，可以传入一组关键词的列表作为初始的聚类中心。
+
+=> `tol : int, default: 200`
 
 当某次迭代后，聚类中心的关键词总变化数量小于此值时，迭代停止。
 
-`max_iter : int`
+=> `max_iter : int, default: 5`
 
 最大迭代次数，通常 4~6 次迭代就收敛了。
 
-`min_cluster_size : int, default: 1`
+=> `min_cluster_size : int, default: 1`
 
-类别的最小样本数量，当聚类完成后，某个类别的样本数小于此值时，会将该类别中样本划分到其他最相近的类别中。迭代结束后，实际的类别数量可能小于指定的 `n_clusters`。
+类别的最小样本数量，当聚类完成后，某个类别的样本数小于此值时，会将该类别中样本划分到其他最相近的类别中。如果 `min_cluster_size` 大于 1，迭代结束后，实际的类别数量可能小于指定的 `n_clusters`。
 
-
-`center_max_features : int, default: 50`
+=> `center_max_features : int, default: 50`
 
 这里聚类中心的特征为出现次数最多的关键词，此参数指定聚类中心保留多少个关键词作为特征。
 
 ### 用法示例
 
 ```python
-from bow_kmeans import BowKMeans
+from bow_cluster import BowCluster
 
-kmeans = BowKMeans(max_iter=6, n_clusters=20, tol=10, init=center_keywords)
+cluster = BowCluster(max_iter=6, n_clusters=20, tol=10, init=center_documents)
 
-kmeans.fit(documents)
+cluster.fit(documents)
 ```
 
 `documents` 中为各文档的关键词列表，形如：
@@ -56,24 +57,18 @@ kmeans.fit(documents)
 ```
 
 
-聚类完成后 `kmeans.labels_` 中记录了各个样本所属类别
+聚类完成后 `cluster.labels_` 中记录了各个样本所属类别
 
 
 ```python
-<<< kmeans.labels_
+<<< cluster.labels_
 >>> [18, 10, 9, 18, 17, 12, 3, 4, 5, 12, 11, 1, 12, 8, 12, 16, 16, 4, 16, 9, ...]
 ```
 
-`kmeans.cluster_centers_` 为各个聚类中心，其包含了该类的所有样本，以及类别标签信息。
+`cluster.cluster_centers_` 为各个聚类中心，包含了该类的特征关键词。
 
-```python
-for center in kmeans.cluster_centers_:
-    print('\nlabel', center.label)
-    for item in center.items:
-        print(item.keywords)
-```
 
-输出如下：
+聚类结果示例：
 
 ```python
 
